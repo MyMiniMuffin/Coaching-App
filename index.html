@@ -135,60 +135,69 @@
         appleIcon.href = "https://cdn-icons-png.flaticon.com/512/2964/2964514.png";
         document.head.appendChild(appleIcon);
 
-        // --- API LAYER (KLARGJORT FOR NEON DB) ---
-        // Denne seksjonen erstatter direkte localStorage-kall.
-        // Når du kobler til Neon, vil du endre innholdet i disse funksjonene til å bruke fetch().
-        
+                // --- API LAYER (NEON CONNECTED) ---
         const api = {
-            // Hent alle brukere (Simulert)
             getUsers: async () => {
-                const users = localStorage.getItem('jnm_users');
-                // Simulert nettverksforsinkelse kan legges inn her: await new Promise(r => setTimeout(r, 500));
-                return users ? JSON.parse(users) : [
-                    { id: 'coach_admin', username: 'coach', password: 'jnm2024', name: 'Coach', role: 'coach' }
-                ];
+                const res = await fetch('/.netlify/functions/users');
+                return await res.json();
             },
 
-            // Lagre ny bruker (Simulert)
             createUser: async (newUser) => {
-                const users = await api.getUsers();
-                users.push(newUser);
-                localStorage.setItem('jnm_users', JSON.stringify(users));
-                return users;
+                const res = await fetch('/.netlify/functions/users', {
+                    method: 'POST',
+                    body: JSON.stringify(newUser)
+                });
+                return await res.json();
             },
 
-            // Slett bruker (Simulert)
             deleteUser: async (userId) => {
-                const users = await api.getUsers();
-                const updatedUsers = users.filter(u => u.id !== userId);
-                localStorage.setItem('jnm_users', JSON.stringify(updatedUsers));
-                localStorage.removeItem(`jnm_data_${userId}`);
-                return updatedUsers;
+                const res = await fetch('/.netlify/functions/users', {
+                    method: 'DELETE',
+                    body: JSON.stringify({ id: userId })
+                });
+                return await res.json();
             },
 
-            // Hent data for en spesifikk bruker (Simulert)
             getUserData: async (userId) => {
-                const key = `jnm_data_${userId}`;
-                const data = localStorage.getItem(key);
-                return data ? JSON.parse(data) : {
-                    dietPlan: '## Frokost\n- Havregrøt\n- Proteinshake\n\n## Lunsj\n- Kylling og ris',
-                    workoutPlan: '## Dag 1: Bein\n- Knebøy 3x8\n- Utfall 3x10',
-                    stepGoal: 10000, 
-                    checkins: []
-                };
+                const res = await fetch(`/.netlify/functions/data?id=${userId}`);
+                return await res.json();
             },
 
-            // Lagre/Oppdater data for en bruker (Simulert)
             saveUserData: async (userId, data) => {
-                const key = `jnm_data_${userId}`;
-                localStorage.setItem(key, JSON.stringify(data));
+                // Vi må finne ut om det er en plan-oppdatering eller en innsjekk
+                // Dette er en forenkling for å passe inn i eksisterende logikk
+                let type = 'plan_update';
+                
+                // Hvis data inneholder en "id" og "date" er det sannsynligvis en innsjekk-array
+                // Men logikken i appen sender hele data-objektet eller sjekker innsjekk
+                // For å gjøre det enkelt, sender vi bare feltene individuelt hvis de finnes
+                
+                // NB: For å få dette 100% sømløst med app-koden over, 
+                // sender vi data direkte til endpointet som 'plan_update' for enkelhets skyld
+                // Innsjekker håndteres litt spesielt i CheckInView componenten
+                
+                await fetch('/.netlify/functions/data', {
+                    method: 'POST',
+                    body: JSON.stringify({ userId, type: 'plan_update', data })
+                });
                 return data;
             },
+            
+            // Spesialfunksjon for ny innsjekk (kalles fra CheckInView)
+            submitCheckin: async (userId, entry) => {
+                 await fetch('/.netlify/functions/data', {
+                    method: 'POST',
+                    body: JSON.stringify({ userId, type: 'new_checkin', data: entry })
+                });
+            },
 
-            // Login sjekk (Simulert)
             login: async (username, password) => {
-                const users = await api.getUsers();
-                return users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+                const res = await fetch('/.netlify/functions/auth', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password })
+                });
+                if (res.status !== 200) return null;
+                return await res.json();
             }
         };
 
@@ -802,7 +811,16 @@
               await api.saveUserData(viewingClient.id, newData);
           };
 
-          const handleNewCheckin = async (entry) => await handleUpdateData('checkins', [...currentData.checkins, entry]);
+          const handleNewCheckin = async (entry) => {
+    if (!viewingClient) return;
+    // Send til backend
+    await api.submitCheckin(viewingClient.id, entry);
+    // Oppdater lokalt state så vi slipper å laste alt på nytt med en gang
+    setCurrentData(prev => ({
+        ...prev,
+        checkins: [...prev.checkins, entry]
+    }));
+};
 
           if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-blue-600">Laster...</div>;
 
