@@ -6,7 +6,7 @@
     <title>JNM Coaching</title>
     
     <!-- PWA: Meta Tags for Mobile -->
-    <meta name="theme-color" content="#007BFF"> <!-- Electric Blue som theme color -->
+    <meta name="theme-color" content="#E6E6FA"> <!-- Endret til bakgrunnsfarge for å matche floating bar -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="JNM Coaching">
@@ -334,8 +334,9 @@
           ];
 
           return (
-            <div className="fixed bottom-0 left-0 right-0 glass-panel border-t border-white/50 safe-area-pb z-50 rounded-t-3xl shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-              <div className="flex justify-around items-center h-20 max-w-md mx-auto">
+            /* ENDRET: Flyttet opp (bottom-6), lagt til margin (left/right-4) og rundet alle hjørner (rounded-2xl) */
+            <div className="fixed bottom-6 left-4 right-4 glass-panel border border-white/50 safe-area-pb z-50 rounded-2xl shadow-xl">
+              <div className="flex justify-around items-center h-16 max-w-md mx-auto">
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
@@ -900,9 +901,10 @@
           }
 
           return (
+            /* ENDRET: Økt padding-bottom (pb-32) slik at innholdet ikke skjules bak den nye floating baren */
             <div className="max-w-md mx-auto min-h-screen bg-brand-pastel relative shadow-2xl overflow-hidden">
               <Header title={activeTab === 'dashboard' ? 'Dashbord' : activeTab === 'diet' ? 'Kosthold' : activeTab === 'workout' ? 'Trening' : 'Innsjekk'} user={currentUser} viewingClient={isCoach ? viewingClient : null} onLogout={handleLogout} onClearClient={() => { setViewingClient(null); setActiveTab('dashboard'); }} />
-              <main className="p-4 pb-24 relative z-10">
+              <main className="p-4 pb-32 relative z-10">
                 {activeTab === 'dashboard' ? <DashboardView userData={currentData} isCoach={isCoach} onUpdateGoal={handleUpdateData} /> :
                  activeTab === 'diet' ? <PlanSection type="diet" content={currentData.dietPlan} onSave={(val) => handleUpdateData('dietPlan', val)} isReadOnly={!isCoach} /> :
                  activeTab === 'workout' ? <PlanSection type="workout" content={currentData.workoutPlan} onSave={(val) => handleUpdateData('workoutPlan', val)} isReadOnly={!isCoach} /> :
