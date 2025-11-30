@@ -1,20 +1,20 @@
 const { neon } = require('@neondatabase/serverless');
 
 exports.handler = async (event) => {
-  const sql = neon(process.env.NETLIFY_DATABASE_URL);
+  const sql = neon(process.env.NETLIFY_DATABASE_URL); 
 
   try {
-    // HENTE DATA FOR EN UTØVER (GET)
+    // GET: Hent all data for en bruker
     if (event.httpMethod === 'GET') {
       const userId = event.queryStringParameters.id;
       
-      if (!userId) return { statusCode: 400, body: 'Mangler bruker-ID' };
+      if (!userId) return { statusCode: 400, body: 'Missing user ID' };
 
-      // 1. Hent planer og mål fra user-tabellen
+      // Hent brukerinfo (planer, mål)
       const userResult = await sql`SELECT diet_plan, workout_plan, step_goal FROM users WHERE id = ${userId}`;
       const user = userResult[0] || {};
 
-      // 2. Hent alle innsjekker fra checkins-tabellen
+      // Hent innsjekker
       const checkins = await sql`
         SELECT 
           id, date, weight, sleep, energy, accuracy, 
@@ -26,13 +26,11 @@ exports.handler = async (event) => {
         WHERE user_id = ${userId}
       `;
       
-      // Gjør om tidsstempel til formatet frontend forventer
       const formattedCheckins = checkins.map(c => ({
         ...c,
         timestamp: new Date(c.timestamp).getTime()
       }));
 
-      // Send alt samlet tilbake
       return {
         statusCode: 200,
         body: JSON.stringify({
@@ -44,18 +42,15 @@ exports.handler = async (event) => {
       };
     }
 
-    // LAGRE DATA (POST)
+    // POST: Handlinger (Oppdater, Ny innsjekk, Slett)
     if (event.httpMethod === 'POST') {
       const { userId, type, data } = JSON.parse(event.body);
 
-      // Scenario A: Coach oppdaterer planen
       if (type === 'plan_update') {
         if (data.dietPlan !== undefined) await sql`UPDATE users SET diet_plan = ${data.dietPlan} WHERE id = ${userId}`;
         if (data.workoutPlan !== undefined) await sql`UPDATE users SET workout_plan = ${data.workoutPlan} WHERE id = ${userId}`;
         if (data.stepGoal !== undefined) await sql`UPDATE users SET step_goal = ${data.stepGoal} WHERE id = ${userId}`;
       } 
-      
-      // Scenario B: Utøver sender inn ny sjekk
       else if (type === 'new_checkin') {
         await sql`
           INSERT INTO checkins (
@@ -68,6 +63,11 @@ exports.handler = async (event) => {
             ${data.takenSupplements}, ${data.comment}, ${data.image}
           )
         `;
+      }
+      else if (type === 'delete_checkin') {
+        // NY FUNKSJON: Slett innsjekk basert på ID
+        // Vi bruker checkinId direkte for å slette den spesifikke raden
+        await sql`DELETE FROM checkins WHERE id = ${data.checkinId}`;
       }
 
       return { statusCode: 200, body: JSON.stringify({ success: true }) };
