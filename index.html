@@ -5,16 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>JNM Coaching</title>
     
-    <!-- PWA: Meta Tags for Mobile -->
-    <meta name="theme-color" content="#E6E6FA"> <!-- Endret til bakgrunnsfarge for å matche floating bar -->
+    <meta name="theme-color" content="#E6E6FA">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="JNM Coaching">
 
-    <!-- Tailwind CSS with Typography Plugin for Markdown styling -->
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     
-    <!-- Custom Tailwind Configuration for Neo-Pastel Theme -->
     <script>
         tailwind.config = {
             theme: {
@@ -22,27 +19,38 @@
                     colors: {
                         brand: {
                             DEFAULT: '#007BFF', // Electric Blue
-                            dark: '#0056b3',    // Mørkere blå for hover
+                            dark: '#0056b3',    // Mørkere blå
                             pastel: '#E6E6FA',  // Digital Lavender (Bakgrunn)
-                            mint: '#98FF98',    // Neo Mint (Aksent/Suksess)
-                            mintdark: '#66cc66' // Mørkere mint for tekst
+                            mint: '#98FF98',    // Neo Mint
+                            mintdark: '#66cc66' // Mørkere mint
                         }
                     },
                     fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'], // Ren tech-font
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'zoom-in': 'zoomIn 0.2s ease-out'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            'from': { opacity: '0', transform: 'translateY(10px)' },
+                            'to': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        zoomIn: {
+                            'from': { opacity: '0', transform: 'scale(0.95)' },
+                            'to': { opacity: '1', transform: 'scale(1)' }
+                        }
                     }
                 }
             }
         }
     </script>
 
-    <!-- Marked Library for Markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <!-- Babel for JSX transformation -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- React and ReactDOM Import Map -->
     <script type="importmap">
         {
             "imports": {
@@ -54,43 +62,35 @@
     </script>
 
     <style>
-        /* Import Inter font for Tech look */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
 
-        /* Hide scrollbar for PWA feel */
         body {
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
             font-family: 'Inter', sans-serif;
-            background-color: #E6E6FA; /* Digital Lavender Background */
+            background-color: #E6E6FA;
         }
-        .safe-area-pb { 
-            padding-bottom: env(safe-area-inset-bottom); 
-        }
-        .animate-fade-in { 
-            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
-        }
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(10px) scale(0.98); } 
-            to { opacity: 1; transform: translateY(0) scale(1); } 
-        }
-        /* Markdown styles override */
-        .prose p { margin-bottom: 0.5em; }
-        .prose ul { margin-top: 0.5em; margin-bottom: 0.5em; }
-        .prose li { margin-top: 0; margin-bottom: 0; }
+        .safe-area-pb { padding-bottom: env(safe-area-inset-bottom); }
         
-        /* Custom checkbox style helper - uses Electric Blue */
         .custom-checkbox:checked {
             background-color: #007BFF;
             border-color: #007BFF;
         }
 
-        /* Glassmorphism utility for tech feel */
         .glass-panel {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Hide scrollbar for clean horizontal scrolling */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
@@ -101,152 +101,88 @@
         import React, { useState, useEffect } from 'react';
         import { createRoot } from 'react-dom/client';
         import { 
-          Home, 
-          Utensils, 
-          Dumbbell, 
-          ClipboardCheck, 
-          Camera, 
-          Save, 
-          ChevronRight, 
-          TrendingUp,
-          Activity,
-          User,
-          Briefcase,
-          LogOut,
-          Lock,
-          ArrowRight,
-          Plus,
-          Users,
-          X,
-          Trash2,
-          Footprints,
-          Target,
-          CheckSquare,
-          Edit2,
-          Check,
-          Moon,
-          Zap,
-          Scale
+          Home, Utensils, Dumbbell, ClipboardCheck, Camera, Save, ChevronRight, 
+          TrendingUp, User, Briefcase, LogOut, Lock, ArrowRight, Plus, 
+          X, Trash2, Footprints, Edit2, Check, Moon, Zap, Scale, Maximize2
         } from 'lucide-react';
 
         // --- GLOBAL CONFIG ---
         const APP_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23007BFF'/%3E%3Ccircle cx='140' cy='360' r='35' fill='%23E6E6FA' opacity='0.9'/%3E%3Ccircle cx='256' cy='256' r='55' fill='%2398FF98' opacity='0.95'/%3E%3Ccircle cx='380' cy='140' r='85' fill='%23FFFFFF'/%3E%3C/svg%3E";
 
-        // --- Config Marked ---
         if (window.marked) {
-            window.marked.setOptions({
-                breaks: true, // Enable line breaks on single newline
-                gfm: true
-            });
+            window.marked.setOptions({ breaks: true, gfm: true });
         }
 
-        // --- PWA Manifest (Dynamic) ---
-        const manifest = {
-            "name": "JNM Coaching",
-            "short_name": "JNM Coach",
-            "start_url": ".",
-            "display": "standalone",
-            "background_color": "#E6E6FA",
-            "theme_color": "#007BFF",
-            "orientation": "portrait",
-            "icons": [
-                {
-                    "src": APP_ICON, 
-                    "sizes": "512x512",
-                    "type": "image/svg+xml"
-                }
-            ]
-        };
-        const content = encodeURIComponent(JSON.stringify(manifest));
-        const url = "data:application/manifest+json," + content;
-        const link = document.createElement('link');
-        link.rel = 'manifest';
-        link.href = url;
-        document.head.appendChild(link);
-        
-        const appleIcon = document.createElement('link');
-        appleIcon.rel = 'apple-touch-icon';
-        appleIcon.href = APP_ICON;
-        document.head.appendChild(appleIcon);
-
-        // --- API LAYER (PURE NETLIFY / NEON) ---
+        // --- API LAYER ---
         const api = {
             getUsers: async () => {
                 const res = await fetch('/.netlify/functions/users');
-                if (!res.ok) throw new Error('Kunne ikke hente brukere (Server Error)');
+                if (!res.ok) throw new Error('Kunne ikke hente brukere');
                 return await res.json();
             },
-
             createUser: async (newUser) => {
-                const res = await fetch('/.netlify/functions/users', {
-                    method: 'POST',
-                    body: JSON.stringify(newUser)
-                });
-                if (!res.ok) throw new Error('Kunne ikke opprette bruker');
+                const res = await fetch('/.netlify/functions/users', { method: 'POST', body: JSON.stringify(newUser) });
+                if (!res.ok) throw new Error('Feil ved opprettelse');
                 return await res.json();
             },
-
             deleteUser: async (userId) => {
-                const res = await fetch('/.netlify/functions/users', {
-                    method: 'DELETE',
-                    body: JSON.stringify({ id: userId })
-                });
-                if (!res.ok) throw new Error('Kunne ikke slette bruker');
+                const res = await fetch('/.netlify/functions/users', { method: 'DELETE', body: JSON.stringify({ id: userId }) });
+                if (!res.ok) throw new Error('Feil ved sletting');
                 return await res.json();
             },
-
             getUserData: async (userId) => {
                 const res = await fetch(`/.netlify/functions/data?id=${userId}`);
-                if (!res.ok) throw new Error('Kunne ikke hente brukerdata');
+                if (!res.ok) throw new Error('Feil ved henting av data');
                 return await res.json();
             },
-
             saveUserData: async (userId, data) => {
-                const res = await fetch('/.netlify/functions/data', {
-                    method: 'POST',
-                    body: JSON.stringify({ userId, type: 'plan_update', data })
-                });
-                if (!res.ok) throw new Error('Kunne ikke lagre data');
+                const res = await fetch('/.netlify/functions/data', { method: 'POST', body: JSON.stringify({ userId, type: 'plan_update', data }) });
+                if (!res.ok) throw new Error('Lagring feilet');
                 return data;
             },
-            
             submitCheckin: async (userId, entry) => {
-                 const res = await fetch('/.netlify/functions/data', {
-                    method: 'POST',
-                    body: JSON.stringify({ userId, type: 'new_checkin', data: entry })
-                });
-                if (!res.ok) throw new Error('Kunne ikke sende innsjekk');
+                 const res = await fetch('/.netlify/functions/data', { method: 'POST', body: JSON.stringify({ userId, type: 'new_checkin', data: entry }) });
+                if (!res.ok) throw new Error('Innsending feilet');
             },
-
-            // NY FUNKSJON: Slette innsjekk
             deleteCheckin: async (checkinId) => {
-                 const res = await fetch('/.netlify/functions/data', {
-                    method: 'POST',
-                    body: JSON.stringify({ type: 'delete_checkin', data: { checkinId } })
-                });
-                if (!res.ok) throw new Error('Kunne ikke slette innsjekk');
+                 const res = await fetch('/.netlify/functions/data', { method: 'POST', body: JSON.stringify({ type: 'delete_checkin', data: { checkinId } }) });
+                if (!res.ok) throw new Error('Sletting feilet');
             },
-
             login: async (username, password) => {
-                const res = await fetch('/.netlify/functions/auth', {
-                    method: 'POST',
-                    body: JSON.stringify({ username, password })
-                });
-                
+                const res = await fetch('/.netlify/functions/auth', { method: 'POST', body: JSON.stringify({ username, password }) });
                 if (res.status === 401) return null; 
-                
-                if (!res.ok) throw new Error('Innlogging feilet (Server Error)');
+                if (!res.ok) throw new Error('Login feilet');
                 return await res.json();
             }
         };
 
-        // --- Helper Functions ---
-        const formatWeight = (val) => {
-            if (!val) return '--';
-            return parseFloat(val).toFixed(1).replace('.', ',');
-        };
+        // --- Helpers ---
+        const formatWeight = (val) => (!val ? '--' : parseFloat(val).toFixed(1).replace('.', ','));
 
         // --- Components ---
+
+        // LIGHTBOX COMPONENT (Fullskjerm bilde)
+        const ImageModal = ({ src, onClose }) => {
+            if (!src) return null;
+            return (
+                <div 
+                    className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-zoom-in cursor-pointer"
+                    onClick={onClose}
+                >
+                    {/* Lukkeknapp */}
+                    <button className="absolute top-6 right-6 text-white bg-white/20 p-2 rounded-full hover:bg-white/40 transition-colors">
+                        <X size={24} />
+                    </button>
+                    
+                    <img 
+                        src={src} 
+                        className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" 
+                        alt="Fullskjerm"
+                        onClick={(e) => e.stopPropagation()} // Hindre lukking hvis man trykker på selve bildet
+                    />
+                </div>
+            );
+        };
 
         const LoginScreen = ({ onLogin }) => {
             const [username, setUsername] = useState('');
@@ -258,17 +194,12 @@
                 e.preventDefault();
                 setError('');
                 setIsLoading(true);
-                
                 try {
                     const user = await api.login(username, password);
-                    if (user) {
-                        onLogin(user);
-                    } else {
-                        setError('Feil brukernavn eller passord');
-                    }
+                    if (user) onLogin(user);
+                    else setError('Feil brukernavn eller passord');
                 } catch (err) {
-                    console.error(err);
-                    setError('Kunne ikke koble til serveren. Prøv igjen senere.');
+                    setError('Serverfeil. Prøv igjen.');
                 } finally {
                     setIsLoading(false);
                 }
@@ -276,54 +207,24 @@
 
             return (
                 <div className="min-h-screen flex flex-col items-center justify-center p-6 animate-fade-in bg-brand-pastel relative overflow-hidden">
-                    {/* Decorative abstract blobs */}
-                    <div className="absolute top-[-50px] left-[-50px] w-48 h-48 bg-brand-mint rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-pulse"></div>
-                    <div className="absolute bottom-[-50px] right-[-50px] w-64 h-64 bg-brand rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
-
                     <div className="text-center mb-8 relative z-10">
                         <div className="w-28 h-28 bg-white/50 backdrop-blur-md rounded-3xl mx-auto flex items-center justify-center shadow-2xl shadow-brand/20 mb-6 p-2 ring-1 ring-white/60">
                             <img src={APP_ICON} alt="Logo" className="w-full h-full object-contain drop-shadow-md rounded-2xl" />
                         </div>
                         <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">JNM Coaching</h1>
-                        <p className="text-slate-600 mt-2 font-medium">Elevate Your Potential</p>
                     </div>
-
                     <div className="w-full max-w-sm glass-panel p-8 rounded-3xl shadow-xl relative z-10">
                         <form onSubmit={handleLogin} className="space-y-5">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Brukernavn</label>
-                                <div className="relative group">
-                                    <User className="absolute left-3 top-3.5 text-slate-400 group-focus-within:text-brand transition-colors" size={20} />
-                                    <input 
-                                        type="text" 
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 bg-white/80 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all"
-                                        placeholder="Brukernavn"
-                                    />
-                                </div>
+                                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-4 py-3 bg-white/80 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-brand outline-none" placeholder="Brukernavn" />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Passord</label>
-                                <div className="relative group">
-                                    <Lock className="absolute left-3 top-3.5 text-slate-400 group-focus-within:text-brand transition-colors" size={20} />
-                                    <input 
-                                        type="password" 
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 bg-white/80 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all"
-                                        placeholder="••••••••"
-                                    />
-                                </div>
+                                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 bg-white/80 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-brand outline-none" placeholder="••••••••" />
                             </div>
-
                             {error && <p className="text-red-500 text-sm text-center font-bold bg-red-100 py-2 rounded-xl">{error}</p>}
-
-                            <button 
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full py-4 rounded-2xl font-bold text-white text-lg shadow-lg bg-brand hover:bg-brand-dark shadow-brand/30 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 hover:shadow-xl"
-                            >
+                            <button type="submit" disabled={isLoading} className="w-full py-4 rounded-2xl font-bold text-white text-lg bg-brand hover:bg-brand-dark shadow-lg shadow-brand/30 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50">
                                 {isLoading ? 'Kobler til...' : <><span className="mr-1">Logg inn</span> <ArrowRight size={20} /></>}
                             </button>
                         </form>
@@ -339,7 +240,6 @@
             { id: 'workout', label: 'Trening', icon: Dumbbell },
             { id: 'checkin', label: 'Innsjekk', icon: ClipboardCheck },
           ];
-
           return (
             <div className="fixed bottom-6 left-4 right-4 glass-panel border border-white/50 safe-area-pb z-50 rounded-2xl shadow-xl">
               <div className="flex justify-around items-center h-16 max-w-md mx-auto">
@@ -347,16 +247,8 @@
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
                   return (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveTab(item.id)}
-                      className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-300 ${
-                        isActive ? 'text-brand scale-110' : 'text-slate-400 hover:text-slate-600'
-                      }`}
-                    >
-                      <div className={`p-1 rounded-xl transition-colors ${isActive ? 'bg-brand/10' : 'bg-transparent'}`}>
-                        <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
-                      </div>
+                    <button key={item.id} onClick={() => setActiveTab(item.id)} className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-300 ${isActive ? 'text-brand scale-110' : 'text-slate-400 hover:text-slate-600'}`}>
+                      <div className={`p-1 rounded-xl transition-colors ${isActive ? 'bg-brand/10' : 'bg-transparent'}`}><Icon size={24} strokeWidth={isActive ? 2.5 : 2} /></div>
                       <span className="text-[10px] font-bold">{item.label}</span>
                     </button>
                   );
@@ -372,186 +264,57 @@
                 <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">{title}</h1>
                 <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${user.role === 'coach' ? 'text-brand-dark' : 'text-brand'}`}>
-                        {user.role === 'coach' ? <Briefcase size={10} /> : <User size={10} />}
-                        {user.name}
+                        {user.role === 'coach' ? <Briefcase size={10} /> : <User size={10} />} {user.name}
                     </span>
                     {viewingClient && (
                         <span className="text-[10px] bg-white px-2 py-0.5 rounded-full text-slate-500 font-medium flex items-center gap-1 shadow-sm">
-                            <ChevronRight size={10} />
-                            {viewingClient.name}
+                            <ChevronRight size={10} /> {viewingClient.name}
                         </span>
                     )}
                 </div>
             </div>
-            
             {viewingClient ? (
-                <button onClick={onClearClient} className="text-sm font-bold text-slate-600 bg-white px-3 py-1.5 rounded-full hover:bg-slate-100 shadow-sm transition-transform active:scale-95">
-                    Lukk klient
-                </button>
+                <button onClick={onClearClient} className="text-sm font-bold text-slate-600 bg-white px-3 py-1.5 rounded-full hover:bg-slate-100 shadow-sm transition-transform active:scale-95">Lukk</button>
             ) : (
-                <button onClick={onLogout} className="text-slate-400 hover:text-red-500 p-2 rounded-full hover:bg-white/50 transition-colors">
-                    <LogOut size={20} />
-                </button>
+                <button onClick={onLogout} className="text-slate-400 hover:text-red-500 p-2 rounded-full hover:bg-white/50 transition-colors"><LogOut size={20} /></button>
             )}
           </div>
         );
 
         const Card = ({ children, className = "" }) => (
-          <div className={`bg-white rounded-3xl p-5 shadow-sm border border-slate-100 ${className}`}>
-            {children}
-          </div>
+          <div className={`bg-white rounded-3xl p-5 shadow-sm border border-slate-100 ${className}`}>{children}</div>
         );
-
-        // --- Coach Dashboard ---
-
-        const CreateUserModal = ({ onClose, onCreated }) => {
-            const [newUser, setNewUser] = useState({ name: '', username: '', password: '' });
-            const [isSubmitting, setIsSubmitting] = useState(false);
-            const [error, setError] = useState('');
-            
-            const handleSubmit = async (e) => {
-                e.preventDefault();
-                setIsSubmitting(true);
-                setError('');
-                try {
-                    const user = { id: Date.now().toString(), role: 'athlete', ...newUser };
-                    await onCreated(user);
-                } catch(e) {
-                    setError('Kunne ikke opprette bruker');
-                    setIsSubmitting(false);
-                }
-            };
-            return (
-                <div className="fixed inset-0 bg-brand-pastel/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-                    <Card className="w-full max-w-sm relative !shadow-2xl">
-                        <button onClick={onClose} className="absolute right-4 top-4 text-slate-400 hover:text-slate-800"><X size={20} /></button>
-                        <h2 className="text-xl font-bold text-slate-800 mb-4">Opprett ny utøver</h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <input required type="text" placeholder="Fullt Navn" className="w-full p-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand outline-none" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} />
-                            <input required type="text" placeholder="Brukernavn" className="w-full p-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand outline-none" value={newUser.username} onChange={e => setNewUser({...newUser, username: e.target.value})} />
-                            <input required type="text" placeholder="Passord" className="w-full p-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand outline-none" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} />
-                            {error && <p className="text-red-500 text-sm">{error}</p>}
-                            <button disabled={isSubmitting} type="submit" className="w-full bg-brand text-white font-bold py-3 rounded-xl disabled:opacity-50 hover:bg-brand-dark shadow-lg shadow-brand/20">
-                                {isSubmitting ? 'Lagrer...' : 'Opprett'}
-                            </button>
-                        </form>
-                    </Card>
-                </div>
-            );
-        };
-
-        const CoachDashboard = ({ user, allUsers, onSelectClient, onAddClient, onDeleteClient }) => {
-            const [showModal, setShowModal] = useState(false);
-            const clients = allUsers.filter(u => u.role === 'athlete');
-            return (
-                <div className="space-y-6 pb-24 animate-fade-in">
-                    {showModal && <CreateUserModal onClose={() => setShowModal(false)} onCreated={async (u) => { await onAddClient(u); setShowModal(false); }} />}
-                    
-                    {/* Modern Gradient Banner */}
-                    <div className="bg-gradient-to-r from-brand to-brand-mint rounded-3xl p-6 text-white shadow-xl shadow-brand/20 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl transform translate-x-10 -translate-y-10"></div>
-                        <h2 className="text-2xl font-extrabold mb-1 relative z-10">Hei Coach! 👋</h2>
-                        <p className="text-white opacity-90 relative z-10">Du har {clients.length} aktive utøvere.</p>
-                    </div>
-
-                    <div className="px-2 flex justify-between items-center">
-                        <h3 className="text-lg font-bold text-slate-800">Dine utøvere</h3>
-                        <button onClick={() => setShowModal(true)} className="bg-brand text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-1 shadow-md hover:bg-brand-dark transition-colors active:scale-95">
-                            <Plus size={16} /> Ny utøver
-                        </button>
-                    </div>
-                    <div className="space-y-3">
-                        {clients.length === 0 ? <div className="text-center py-10 text-slate-400 bg-white/50 rounded-3xl border border-dashed border-slate-300">Ingen utøvere funnet.</div> : clients.map(client => (
-                            <div key={client.id} className="w-full bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-3 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer">
-                                <button onClick={() => onSelectClient(client)} className="flex-1 flex items-center gap-4 text-left">
-                                    <div className="w-12 h-12 bg-brand-pastel text-brand rounded-2xl flex items-center justify-center font-bold text-lg shadow-inner">{client.name.charAt(0)}</div>
-                                    <div><div className="font-bold text-slate-800">{client.name}</div><div className="text-xs text-slate-400 font-medium">@{client.username}</div></div>
-                                </button>
-                                <div className="flex items-center gap-1">
-                                    <button onClick={async (e) => { e.stopPropagation(); if(window.confirm(`Slette ${client.name}?`)) await onDeleteClient(client.id); }} className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"><Trash2 size={20} /></button>
-                                    <button onClick={() => onSelectClient(client)} className="p-3 text-brand-mintdark hover:bg-brand-mint/10 rounded-xl transition-colors"><ChevronRight size={20} /></button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            );
-        };
 
         // --- Views ---
 
         const DashboardView = ({ userData, isCoach, onUpdateGoal }) => {
           const lastCheckin = userData.checkins?.length > 0 ? userData.checkins[userData.checkins.length - 1] : null;
-
           const handleEditGoal = async () => {
-              const currentGoal = userData.stepGoal || 10000;
-              const input = prompt("Sett nytt skrittmål:", currentGoal);
-              if (input === null) return; 
-              const parsed = parseInt(input);
-              if (!isNaN(parsed) && parsed > 0) await onUpdateGoal('stepGoal', parsed);
+              const input = prompt("Sett nytt skrittmål:", userData.stepGoal || 10000);
+              if (input && !isNaN(parseInt(input))) await onUpdateGoal('stepGoal', parseInt(input));
           };
 
           return (
             <div className="space-y-6 pb-24 animate-fade-in">
-              {/* Abstract Neo-Pastel Gradient Card */}
               <div className="bg-gradient-to-br from-brand via-[#66a3ff] to-brand-mint rounded-3xl p-6 text-white shadow-xl shadow-brand/20 relative overflow-hidden">
                 <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-brand-mint rounded-full mix-blend-overlay filter blur-xl opacity-50"></div>
                 <h2 className="text-2xl font-extrabold mb-1 relative z-10">Status</h2>
                 <p className="text-white opacity-90 relative z-10 font-medium">Din progresjon.</p>
               </div>
 
-              {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-4">
-                <Card className="flex flex-col items-center justify-center py-8 relative border border-transparent hover:border-brand-mint/50 transition-all group">
-                    <div className="w-14 h-14 bg-brand-pastel rounded-2xl flex items-center justify-center text-brand mb-3 group-hover:scale-110 transition-transform">
-                        <Footprints size={28} />
-                    </div>
-                    <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Skrittmål</span>
-                    <span className="text-slate-800 font-extrabold text-2xl tracking-tight">{userData.stepGoal?.toLocaleString() || '10 000'}</span>
-                    
-                    {isCoach && (
-                        <button 
-                            onClick={handleEditGoal}
-                            className="absolute top-2 right-2 p-2 text-slate-300 hover:text-brand z-10"
-                        >
-                            <Edit2 size={16} />
-                        </button>
-                    )}
+                <Card className="flex flex-col items-center justify-center py-8 relative group">
+                    <div className="w-14 h-14 bg-brand-pastel rounded-2xl flex items-center justify-center text-brand mb-3 group-hover:scale-110 transition-transform"><Footprints size={28} /></div>
+                    <span className="text-slate-400 text-xs font-bold uppercase">Skrittmål</span>
+                    <span className="text-slate-800 font-extrabold text-2xl">{userData.stepGoal?.toLocaleString() || '10 000'}</span>
+                    {isCoach && <button onClick={handleEditGoal} className="absolute top-2 right-2 p-2 text-slate-300 hover:text-brand"><Edit2 size={16} /></button>}
                 </Card>
-
-                <Card className="flex flex-col items-center justify-center py-8 border border-transparent hover:border-brand-mint/50 transition-all group">
-                  <div className="w-14 h-14 bg-brand-mint/20 rounded-2xl flex items-center justify-center text-brand-mintdark mb-3 group-hover:scale-110 transition-transform">
-                    <TrendingUp size={28} />
-                  </div>
-                  <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Siste vekt</span>
-                  <span className="text-slate-800 font-extrabold text-2xl tracking-tight">
-                    {lastCheckin ? `${formatWeight(lastCheckin.weight)} kg` : '--'}
-                  </span>
+                <Card className="flex flex-col items-center justify-center py-8 group">
+                  <div className="w-14 h-14 bg-brand-mint/20 rounded-2xl flex items-center justify-center text-brand-mintdark mb-3 group-hover:scale-110 transition-transform"><TrendingUp size={28} /></div>
+                  <span className="text-slate-400 text-xs font-bold uppercase">Siste vekt</span>
+                  <span className="text-slate-800 font-extrabold text-2xl">{lastCheckin ? `${formatWeight(lastCheckin.weight)} kg` : '--'}</span>
                 </Card>
               </div>
-
-              {/* Siste innsjekk mini-summary */}
-              {lastCheckin && (
-                  <div className="px-2">
-                    <h3 className="text-lg font-bold text-slate-800 mb-3 ml-1">Siste rapport</h3>
-                    <Card className="!p-6">
-                        <div className="flex justify-between items-center text-sm mb-3 pb-3 border-b border-slate-50">
-                            <span className="text-slate-500 font-medium">Plan Nøyaktighet</span>
-                            <span className="font-bold text-brand bg-brand-pastel px-2 py-1 rounded-lg">{lastCheckin.accuracy}/10</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm mb-3 pb-3 border-b border-slate-50">
-                            <span className="text-slate-500 font-medium">Trening (S/C)</span>
-                            <span className="font-bold text-slate-800">{lastCheckin.strengthSessions} + {lastCheckin.cardioSessions || 0} økter</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-500 font-medium">Skrittmål</span>
-                            <span className={`font-bold px-2 py-1 rounded-lg ${lastCheckin.stepsReached ? 'text-brand-mintdark bg-brand-mint/20' : 'text-slate-400 bg-slate-100'}`}>
-                                {lastCheckin.stepsReached ? 'Oppnådd' : 'Ikke oppnådd'}
-                            </span>
-                        </div>
-                    </Card>
-                  </div>
-              )}
             </div>
           );
         };
@@ -561,11 +324,6 @@
           const [text, setText] = useState(content);
           useEffect(() => setText(content), [content]);
           
-          const handleSaveLocal = async () => {
-              await onSave(text);
-              setIsEditing(false);
-          }
-
           return (
             <div className="space-y-4 pb-24 animate-fade-in">
               <Card>
@@ -576,19 +334,12 @@
                     </div>
                     <h2 className="font-bold text-xl text-slate-800">{type === 'diet' ? 'Kosthold' : 'Trening'}</h2>
                   </div>
-                  {!isReadOnly && (
-                      <button onClick={() => isEditing ? handleSaveLocal() : setIsEditing(true)} className="text-xs font-bold text-white px-4 py-2 bg-slate-900 rounded-full shadow-lg hover:bg-brand transition-colors">
-                        {isEditing ? 'Lagre' : 'Rediger'}
-                      </button>
-                  )}
+                  {!isReadOnly && <button onClick={() => { if(isEditing) onSave(text); setIsEditing(!isEditing); }} className="text-xs font-bold text-white px-4 py-2 bg-slate-900 rounded-full shadow-lg">{isEditing ? 'Lagre' : 'Rediger'}</button>}
                 </div>
                 {isEditing && !isReadOnly ? (
-                  <textarea value={text} onChange={(e) => setText(e.target.value)} className="w-full h-96 p-4 bg-slate-50 rounded-2xl focus:ring-2 focus:ring-brand outline-none text-slate-700 text-sm font-mono leading-relaxed" />
+                  <textarea value={text} onChange={(e) => setText(e.target.value)} className="w-full h-96 p-4 bg-slate-50 rounded-2xl focus:ring-2 focus:ring-brand outline-none text-slate-700 font-mono text-sm" />
                 ) : (
-                  <div 
-                    className="prose prose-sm prose-slate max-w-none text-slate-600 font-medium"
-                    dangerouslySetInnerHTML={{ __html: text ? window.marked.parse(text) : '<em class="text-slate-400">Ingen plan lagt til enda.</em>' }}
-                  />
+                  <div className="prose prose-sm prose-slate max-w-none text-slate-600 font-medium" dangerouslySetInnerHTML={{ __html: text ? window.marked.parse(text) : '<em class="text-slate-400">Ingen plan.</em>' }} />
                 )}
               </Card>
             </div>
@@ -597,26 +348,43 @@
 
         const CheckInView = ({ checkins, onNewCheckin, onDelete, isReadOnly, stepGoal }) => {
           const [step, setStep] = useState('form');
+          const [selectedImage, setSelectedImage] = useState(null); // For lightbox
+          
+          // Form State
           const [formData, setFormData] = useState({
-            weight: '',
-            sleep: 5,
-            energy: 5,
-            accuracy: 10,
-            strengthSessions: 0,
-            cardioSessions: 0,
-            stepsReached: false,
-            takenSupplements: false,
-            comment: '',
-            image: null
+            weight: '', sleep: 5, energy: 5, accuracy: 10,
+            strengthSessions: 0, cardioSessions: 0,
+            stepsReached: false, takenSupplements: false,
+            comment: '', 
+            images: [] // Changed from 'image' to 'images' array
           });
 
           const handleImageUpload = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onloadend = () => setFormData({ ...formData, image: reader.result });
-              reader.readAsDataURL(file);
-            }
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            // Leser alle filene asynkront
+            Promise.all(files.map(file => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (event) => resolve(event.target.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            })).then(newImages => {
+                // Legger til nye bilder i listen
+                setFormData(prev => ({
+                    ...prev,
+                    images: [...prev.images, ...newImages]
+                }));
+            }).catch(err => console.error("Feil ved bildeopplasting", err));
+          };
+
+          const removeImage = (indexToRemove) => {
+              setFormData(prev => ({
+                  ...prev,
+                  images: prev.images.filter((_, index) => index !== indexToRemove)
+              }));
           };
 
           const handleSubmit = async (e) => {
@@ -631,124 +399,61 @@
             setStep('success');
             setTimeout(() => {
               setStep('form');
-              setFormData({ 
-                  weight: '', sleep: 5, energy: 5, accuracy: 10, 
-                  strengthSessions: 0, cardioSessions: 0, stepsReached: false, takenSupplements: false, 
-                  comment: '', image: null 
-              });
+              setFormData({ weight: '', sleep: 5, energy: 5, accuracy: 10, strengthSessions: 0, cardioSessions: 0, stepsReached: false, takenSupplements: false, comment: '', images: [] });
             }, 3000);
           };
 
           if (step === 'success') {
             return (
               <div className="flex flex-col items-center justify-center h-[60vh] animate-fade-in text-center px-6">
-                <div className="w-24 h-24 bg-brand-mint/20 rounded-full flex items-center justify-center text-brand-mintdark mb-6 shadow-lg shadow-brand-mint/20 animate-bounce"><ClipboardCheck size={48} /></div>
-                <h2 className="text-2xl font-extrabold text-slate-800 mb-2">Innsjekk mottatt!</h2>
-                <p className="text-slate-500">Bra jobba i dag! 🚀</p>
-                <button onClick={() => setStep('form')} className="mt-8 text-brand font-bold bg-white px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all">Tilbake</button>
+                <div className="w-24 h-24 bg-brand-mint/20 rounded-full flex items-center justify-center text-brand-mintdark mb-6 animate-bounce"><ClipboardCheck size={48} /></div>
+                <h2 className="text-2xl font-extrabold text-slate-800">Innsjekk mottatt!</h2>
+                <button onClick={() => setStep('form')} className="mt-8 text-brand font-bold bg-white px-6 py-3 rounded-full shadow-md">Tilbake</button>
               </div>
             );
           }
 
           return (
             <div className="space-y-6 pb-24 animate-fade-in">
+              {/* GLOBAL LIGHTBOX */}
+              <ImageModal src={selectedImage} onClose={() => setSelectedImage(null)} />
+
               {!isReadOnly && (
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    <Card className="space-y-6 border-transparent shadow-lg">
+                    <Card className="space-y-6">
                       <h3 className="font-bold text-slate-800 mb-4 border-b border-slate-50 pb-2 text-lg">Ny oppdatering</h3>
-                      
-                      {/* Vekt (Alltid viktigst øverst) */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Dagens Vekt (kg)</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Vekt (kg)</label>
                         <div className="relative">
                             <Scale className="absolute left-4 top-4 text-brand" size={20} />
                             <input type="number" step="0.1" required value={formData.weight} onChange={(e) => setFormData({...formData, weight: e.target.value})} className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand font-bold text-lg" placeholder="0.0" />
                         </div>
                       </div>
 
-                      {/* 1. Nøyaktighet */}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex justify-between ml-1">
-                            <span>Plan Nøyaktighet</span>
-                            <span className="text-brand font-bold">{formData.accuracy}/10</span>
-                        </label>
-                        <select value={formData.accuracy} onChange={(e) => setFormData({...formData, accuracy: e.target.value})} className="w-full px-4 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand font-medium">
-                            {[...Array(10)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
-                        </select>
-                      </div>
-
-                      {/* 2. Energi & 3. Søvn (Side om side) */}
+                      {/* Selectors for stats */}
                       <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1 flex items-center gap-1"><Zap size={12}/> Energi</label>
-                          <select value={formData.energy} onChange={(e) => setFormData({...formData, energy: e.target.value})} className="w-full px-4 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand font-medium">
-                            {[...Array(10)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1 flex items-center gap-1"><Moon size={12}/> Søvn</label>
-                          <select value={formData.sleep} onChange={(e) => setFormData({...formData, sleep: e.target.value})} className="w-full px-4 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand font-medium">
-                            {[...Array(10)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
-                          </select>
-                        </div>
+                         <div><label className="block text-xs font-bold text-slate-500 uppercase mb-2">Energi</label><select value={formData.energy} onChange={(e) => setFormData({...formData, energy: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-brand font-bold">{[...Array(10)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
+                         <div><label className="block text-xs font-bold text-slate-500 uppercase mb-2">Søvn</label><select value={formData.sleep} onChange={(e) => setFormData({...formData, sleep: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-brand font-bold">{[...Array(10)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
                       </div>
-
-                      {/* 4. Styrkeøkter (Select 0-7) */}
+                      
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Antall styrkeøkter</label>
-                        <select value={formData.strengthSessions} onChange={(e) => setFormData({...formData, strengthSessions: e.target.value})} className="w-full px-4 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand font-medium">
-                            <option value="0">0 økter</option>
-                            <option value="1">1 økt</option>
-                            <option value="2">2 økter</option>
-                            <option value="3">3 økter</option>
-                            <option value="4">4 økter</option>
-                            <option value="5">5 økter</option>
-                            <option value="6">6 økter</option>
-                            <option value="7">7+ økter</option>
-                        </select>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Plan Nøyaktighet ({formData.accuracy}/10)</label>
+                        <select value={formData.accuracy} onChange={(e) => setFormData({...formData, accuracy: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-brand font-bold">{[...Array(10)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select>
                       </div>
 
-                      {/* NY: Cardioøkter (Select 0-7) */}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Antall cardioøkter</label>
-                        <select value={formData.cardioSessions} onChange={(e) => setFormData({...formData, cardioSessions: e.target.value})} className="w-full px-4 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand font-medium">
-                            <option value="0">0 økter</option>
-                            <option value="1">1 økt</option>
-                            <option value="2">2 økter</option>
-                            <option value="3">3 økter</option>
-                            <option value="4">4 økter</option>
-                            <option value="5">5 økter</option>
-                            <option value="6">6 økter</option>
-                            <option value="7">7+ økter</option>
-                        </select>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div><label className="block text-xs font-bold text-slate-500 uppercase mb-2">Styrkeøkter</label><select value={formData.strengthSessions} onChange={(e) => setFormData({...formData, strengthSessions: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-brand font-bold"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7+</option></select></div>
+                        <div><label className="block text-xs font-bold text-slate-500 uppercase mb-2">Cardioøkter</label><select value={formData.cardioSessions} onChange={(e) => setFormData({...formData, cardioSessions: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-brand font-bold"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7+</option></select></div>
                       </div>
 
-                      {/* 5. Skritt & 6. Kosttilskudd (Checkboxer) */}
                       <div className="space-y-3 pt-2">
-                          <label className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border ${formData.stepsReached ? 'bg-brand-mint/10 border-brand-mint/50' : 'bg-slate-50 border-transparent hover:bg-slate-100'}`}>
-                              <input 
-                                type="checkbox" 
-                                checked={formData.stepsReached}
-                                onChange={(e) => setFormData({...formData, stepsReached: e.target.checked})}
-                                className="custom-checkbox w-6 h-6 rounded-lg border-slate-300 text-brand focus:ring-brand"
-                              />
-                              <div>
-                                  <div className="font-bold text-slate-800">Skrittmål</div>
-                                  <div className="text-xs text-slate-500">Jeg nådde målet på {stepGoal} skritt</div>
-                              </div>
+                          <label className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer border ${formData.stepsReached ? 'bg-brand-mint/10 border-brand-mint/50' : 'bg-slate-50 border-transparent'}`}>
+                              <input type="checkbox" checked={formData.stepsReached} onChange={(e) => setFormData({...formData, stepsReached: e.target.checked})} className="custom-checkbox w-6 h-6 rounded-lg text-brand focus:ring-brand" />
+                              <div><div className="font-bold text-slate-800">Skrittmål</div><div className="text-xs text-slate-500">Nådde {stepGoal} skritt</div></div>
                           </label>
-
-                          <label className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border ${formData.takenSupplements ? 'bg-brand-mint/10 border-brand-mint/50' : 'bg-slate-50 border-transparent hover:bg-slate-100'}`}>
-                              <input 
-                                type="checkbox" 
-                                checked={formData.takenSupplements}
-                                onChange={(e) => setFormData({...formData, takenSupplements: e.target.checked})}
-                                className="custom-checkbox w-6 h-6 rounded-lg border-slate-300 text-brand focus:ring-brand"
-                              />
-                              <div>
-                                  <div className="font-bold text-slate-800">Kosttilskudd</div>
-                                  <div className="text-xs text-slate-500">Jeg har tatt dagens tilskudd</div>
-                              </div>
+                          <label className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer border ${formData.takenSupplements ? 'bg-brand-mint/10 border-brand-mint/50' : 'bg-slate-50 border-transparent'}`}>
+                              <input type="checkbox" checked={formData.takenSupplements} onChange={(e) => setFormData({...formData, takenSupplements: e.target.checked})} className="custom-checkbox w-6 h-6 rounded-lg text-brand focus:ring-brand" />
+                              <div><div className="font-bold text-slate-800">Kosttilskudd</div><div className="text-xs text-slate-500">Tatt dagens tilskudd</div></div>
                           </label>
                       </div>
 
@@ -758,15 +463,40 @@
                       </div>
                     </Card>
 
-                    <Card className="border-dashed border-2 border-brand-mint/50 bg-brand-mint/10">
-                      <label className="flex flex-col items-center justify-center p-6 cursor-pointer group">
-                        {formData.image ? (
-                          <div className="relative w-full"><img src={formData.image} alt="Preview" className="w-full h-48 object-cover rounded-2xl shadow-md" /><div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl text-white font-medium opacity-0 hover:opacity-100 transition-opacity">Endre</div></div>
-                        ) : (
-                          <><div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-brand-mintdark mb-3 shadow-sm group-hover:scale-110 transition-transform"><Camera size={28} /></div><span className="font-bold text-brand-mintdark">Legg til bilde</span></>
-                        )}
-                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                      </label>
+                    {/* IMAGE UPLOAD SECTION */}
+                    <Card className="border-dashed border-2 border-brand-mint/50 bg-brand-mint/5">
+                        <div className="space-y-4">
+                            {/* Grid of selected images */}
+                            {formData.images.length > 0 && (
+                                <div className="grid grid-cols-3 gap-2">
+                                    {formData.images.map((img, idx) => (
+                                        <div key={idx} className="relative aspect-square group">
+                                            <img 
+                                                src={img} 
+                                                className="w-full h-full object-cover rounded-xl shadow-sm cursor-pointer border border-white" 
+                                                alt="Preview" 
+                                                onClick={() => setSelectedImage(img)}
+                                            />
+                                            <button 
+                                                type="button"
+                                                onClick={() => removeImage(idx)} 
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-md hover:scale-110 transition-transform"
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Upload Button */}
+                            <label className="flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-white/50 rounded-xl transition-colors">
+                                <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-brand-mintdark mb-2 shadow-sm"><Camera size={28} /></div>
+                                <span className="font-bold text-brand-mintdark text-sm">Legg til bilder</span>
+                                <span className="text-xs text-slate-400">Du kan velge flere</span>
+                                <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+                            </label>
+                        </div>
                     </Card>
 
                     <button type="submit" className="w-full bg-brand text-white font-bold py-4 rounded-2xl shadow-xl shadow-brand/30 hover:bg-brand-dark active:scale-95 transition-all flex items-center justify-center gap-2"><Save size={20} /> Send inn</button>
@@ -775,63 +505,104 @@
 
               <div className={!isReadOnly ? "mt-8 border-t border-slate-200/50 pt-8" : ""}>
                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 px-2">Historikk</h3>
-                {checkins.length === 0 ? <div className="text-center text-slate-400 py-10 font-medium">Ingen innsjekker enda.</div> : (
+                {checkins.length === 0 ? <div className="text-center text-slate-400 py-10">Ingen innsjekker enda.</div> : (
                     <div className="space-y-4">
-                        {checkins.slice().sort((a,b) => b.timestamp - a.timestamp).map((entry) => (
-                        <div key={entry.id} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden transition-all hover:shadow-md group">
-                            <div className="flex justify-between items-start mb-3 mt-2">
-                                <div><div className="font-bold text-slate-800 text-lg">{entry.date}</div><div className="text-xs text-slate-400 font-medium">Logget kl {new Date(entry.id).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div></div>
-                                <div className="text-right">
-                                    <div className="bg-brand-pastel px-3 py-1 rounded-full text-sm font-bold text-brand-dark mb-1">{formatWeight(entry.weight)} kg</div>
-                                </div>
-                            </div>
-                            
-                            {/* NEW: Delete Button only for Coach */}
-                            {isReadOnly && (
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }}
-                                    className="absolute top-4 right-4 p-2 bg-white rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 shadow-sm opacity-0 group-hover:opacity-100 transition-all z-10"
-                                    title="Slett innsjekk"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            )}
-                            
-                            {/* Grid stats - Refined */}
-                            <div className="grid grid-cols-3 gap-2 mb-4">
-                                <div className="bg-brand-pastel/50 p-2 rounded-xl text-center">
-                                    <div className="text-[9px] uppercase text-brand font-bold">Plan</div>
-                                    <div className="font-bold text-slate-700">{entry.accuracy}/10</div>
-                                </div>
-                                <div className="bg-orange-50 p-2 rounded-xl text-center">
-                                    <div className="text-[9px] uppercase text-orange-400 font-bold">Trening (S+C)</div>
-                                    <div className="font-bold text-slate-700">{entry.strengthSessions} + {entry.cardioSessions || 0}</div>
-                                </div>
-                                <div className="bg-purple-50 p-2 rounded-xl text-center">
-                                    <div className="text-[9px] uppercase text-purple-400 font-bold">Energi/Søvn</div>
-                                    <div className="font-bold text-slate-700">{entry.energy}/{entry.sleep}</div>
-                                </div>
-                            </div>
+                        {checkins.slice().sort((a,b) => b.timestamp - a.timestamp).map((entry) => {
+                            // Håndter både nytt array (images) og gammelt enkeltbilde (image)
+                            const displayImages = entry.images && entry.images.length > 0 
+                                ? entry.images 
+                                : (entry.image ? [entry.image] : []);
 
-                            {/* Checkboxes summary */}
-                            <div className="flex gap-2 mb-3">
-                                <div className={`flex-1 p-2 rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1 ${entry.stepsReached ? 'bg-brand-mint/20 text-brand-mintdark' : 'bg-slate-50 text-slate-400'}`}>
-                                    {entry.stepsReached ? <Check size={14} /> : <X size={14} />} Skrittmål
+                            return (
+                            <div key={entry.id} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <div className="font-bold text-slate-800 text-lg">{entry.date}</div>
+                                        <div className="text-xs text-slate-400 font-medium">{new Date(entry.id).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                                    </div>
+                                    <div className="bg-brand-pastel px-3 py-1 rounded-full text-sm font-bold text-brand-dark">{formatWeight(entry.weight)} kg</div>
                                 </div>
-                                <div className={`flex-1 p-2 rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1 ${entry.takenSupplements ? 'bg-brand-mint/20 text-brand-mintdark' : 'bg-slate-50 text-slate-400'}`}>
-                                    {entry.takenSupplements ? <Check size={14} /> : <X size={14} />} Tilskudd
+                                
+                                {isReadOnly && <button onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }} className="absolute top-4 right-4 text-slate-300 hover:text-red-500"><Trash2 size={16} /></button>}
+                                
+                                <div className="grid grid-cols-3 gap-2 mb-4 text-center text-xs">
+                                    <div className="bg-brand-pastel/50 p-2 rounded-xl"><b>Plan</b><br/>{entry.accuracy}/10</div>
+                                    <div className="bg-orange-50 p-2 rounded-xl"><b>Trening</b><br/>{entry.strengthSessions} + {entry.cardioSessions}</div>
+                                    <div className="bg-purple-50 p-2 rounded-xl"><b>Rest</b><br/>{entry.energy} / {entry.sleep}</div>
                                 </div>
-                            </div>
 
-                            {entry.comment && <div className="bg-slate-50 p-3 rounded-2xl text-sm text-slate-600 mb-3 italic">"{entry.comment}"</div>}
-                            {entry.image && <div className="mt-3"><img src={entry.image} className="w-full h-48 object-cover rounded-2xl shadow-sm" alt="Checkin" /></div>}
-                        </div>
-                        ))}
+                                {entry.comment && <div className="bg-slate-50 p-3 rounded-2xl text-sm text-slate-600 mb-3 italic">"{entry.comment}"</div>}
+                                
+                                {/* Image Gallery Scroll */}
+                                {displayImages.length > 0 && (
+                                    <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar snap-x">
+                                        {displayImages.map((img, idx) => (
+                                            <div key={idx} className="flex-none w-24 h-24 snap-start cursor-pointer" onClick={() => setSelectedImage(img)}>
+                                                <img src={img} className="w-full h-full object-cover rounded-xl border border-slate-100 shadow-sm hover:opacity-90 transition-opacity" alt="Checkin" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )})}
                     </div>
                 )}
               </div>
             </div>
           );
+        };
+
+        const CoachDashboard = ({ user, allUsers, onSelectClient, onAddClient, onDeleteClient }) => {
+            const [showModal, setShowModal] = useState(false);
+            const clients = allUsers.filter(u => u.role === 'athlete');
+            return (
+                <div className="space-y-6 pb-24 animate-fade-in">
+                    {showModal && (
+                        <div className="fixed inset-0 bg-brand-pastel/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                            <Card className="w-full max-w-sm relative !shadow-2xl">
+                                <button onClick={() => setShowModal(false)} className="absolute right-4 top-4 text-slate-400"><X size={20} /></button>
+                                <h2 className="text-xl font-bold text-slate-800 mb-4">Ny utøver</h2>
+                                <form onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const fd = new FormData(e.target);
+                                    onAddClient(Object.fromEntries(fd));
+                                    setShowModal(false);
+                                }} className="space-y-4">
+                                    <input required name="name" type="text" placeholder="Fullt Navn" className="w-full p-3 bg-slate-50 rounded-xl" />
+                                    <input required name="username" type="text" placeholder="Brukernavn" className="w-full p-3 bg-slate-50 rounded-xl" />
+                                    <input required name="password" type="text" placeholder="Passord" className="w-full p-3 bg-slate-50 rounded-xl" />
+                                    <button type="submit" className="w-full bg-brand text-white font-bold py-3 rounded-xl">Opprett</button>
+                                </form>
+                            </Card>
+                        </div>
+                    )}
+                    
+                    <div className="bg-gradient-to-r from-brand to-brand-mint rounded-3xl p-6 text-white shadow-xl shadow-brand/20 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl transform translate-x-10 -translate-y-10"></div>
+                        <h2 className="text-2xl font-extrabold mb-1 relative z-10">Hei Coach! 👋</h2>
+                        <p className="text-white opacity-90 relative z-10">{clients.length} aktive utøvere.</p>
+                    </div>
+
+                    <div className="px-2 flex justify-between items-center">
+                        <h3 className="text-lg font-bold text-slate-800">Dine utøvere</h3>
+                        <button onClick={() => setShowModal(true)} className="bg-brand text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-1 shadow-md"><Plus size={16} /> Ny</button>
+                    </div>
+                    <div className="space-y-3">
+                        {clients.map(client => (
+                            <div key={client.id} className="w-full bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-3 hover:shadow-md cursor-pointer" onClick={() => onSelectClient(client)}>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-brand-pastel text-brand rounded-2xl flex items-center justify-center font-bold text-lg">{client.name.charAt(0)}</div>
+                                    <div><div className="font-bold text-slate-800">{client.name}</div><div className="text-xs text-slate-400">@{client.username}</div></div>
+                                </div>
+                                <div className="flex gap-1">
+                                    <button onClick={(e) => { e.stopPropagation(); if(confirm('Slett?')) onDeleteClient(client.id); }} className="p-3 text-slate-300 hover:text-red-500"><Trash2 size={20} /></button>
+                                    <div className="p-3 text-brand-mintdark"><ChevronRight size={20} /></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
         };
 
         const App = () => {
@@ -853,30 +624,15 @@
                         setCurrentUser(sessionUser);
                         if (sessionUser.role === 'athlete') setViewingClient(sessionUser);
                     }
-                } catch(e) {
-                    console.error("Feil ved oppstart (sannsynligvis lokal kjøring):", e);
-                    // Fallback for lokal demo
-                    setAllUsers([{ id: 'coach_admin', username: 'coach', password: 'jnm2024', name: 'Coach', role: 'coach' }]);
-                } finally {
-                    setIsLoading(false);
-                }
+                } catch(e) { console.error(e); } finally { setIsLoading(false); }
             };
             init();
           }, []);
 
           useEffect(() => {
-            const loadClientData = async () => {
-                if (viewingClient) {
-                    try {
-                        const data = await api.getUserData(viewingClient.id);
-                        setCurrentData(data);
-                    } catch (e) {
-                         console.error("Kunne ikke laste data", e);
-                         setCurrentData({ dietPlan: '', workoutPlan: '', stepGoal: 10000, checkins: [] });
-                    }
-                }
-            };
-            loadClientData();
+            if (viewingClient) {
+                api.getUserData(viewingClient.id).then(setCurrentData).catch(() => setCurrentData({ dietPlan: '', workoutPlan: '', stepGoal: 10000, checkins: [] }));
+            }
           }, [viewingClient]);
 
           const handleLogin = (user) => {
@@ -892,72 +648,36 @@
               setActiveTab('dashboard');
           };
 
-          const handleAddClient = async (newUser) => {
-              const updatedUsers = await api.createUser(newUser);
-              setAllUsers(updatedUsers);
-          };
-          
-          const handleDeleteClient = async (userId) => {
-              const updatedUsers = await api.deleteUser(userId);
-              setAllUsers(updatedUsers);
-          };
-          
-          const handleUpdateData = async (field, value) => {
-              if (!viewingClient) return;
-              const newData = { ...currentData, [field]: value };
-              setCurrentData(newData);
-              await api.saveUserData(viewingClient.id, newData);
-          };
-
           const handleNewCheckin = async (entry) => {
                 if (!viewingClient) return;
                 await api.submitCheckin(viewingClient.id, entry);
-                setCurrentData(prev => ({
-                    ...prev,
-                    checkins: [...prev.checkins, entry]
-                }));
+                setCurrentData(prev => ({ ...prev, checkins: [...prev.checkins, entry] }));
           };
 
-          // NY FUNKSJON: Håndtere sletting av innsjekk
           const handleDeleteCheckin = async (checkinId) => {
             if (!viewingClient) return;
-            if(!window.confirm('Er du sikker på at du vil slette denne innsjekken?')) return;
-            
+            if(!confirm('Slett denne innsjekken?')) return;
             try {
                 await api.deleteCheckin(checkinId);
-                // Oppdater lokal state umiddelbart
-                setCurrentData(prev => ({
-                    ...prev,
-                    checkins: prev.checkins.filter(c => c.id !== checkinId)
-                }));
-            } catch (e) {
-                alert('Kunne ikke slette innsjekk: ' + e.message);
-            }
+                setCurrentData(prev => ({ ...prev, checkins: prev.checkins.filter(c => c.id !== checkinId) }));
+            } catch (e) { alert('Kunne ikke slette'); }
           };
 
-          if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-brand-pastel text-brand font-bold text-xl animate-pulse">JNM Coaching...</div>;
-
+          if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-brand-pastel text-brand font-bold animate-pulse">Laster...</div>;
           if (!currentUser) return <LoginScreen onLogin={handleLogin} />;
-
           const isCoach = currentUser.role === 'coach';
-          
+
           if (isCoach && !viewingClient) {
-              return (
-                <div className="max-w-md mx-auto min-h-screen bg-brand-pastel relative shadow-2xl overflow-hidden">
-                    <Header title="Utøvere" user={currentUser} onLogout={handleLogout} />
-                    <main className="p-4 relative z-10"><CoachDashboard user={currentUser} allUsers={allUsers} onSelectClient={(client) => { setViewingClient(client); setActiveTab('dashboard'); }} onAddClient={handleAddClient} onDeleteClient={handleDeleteClient} /></main>
-                </div>
-              );
+              return <div className="max-w-md mx-auto min-h-screen bg-brand-pastel relative shadow-2xl overflow-hidden"><Header title="Utøvere" user={currentUser} onLogout={handleLogout} /><main className="p-4 relative z-10"><CoachDashboard user={currentUser} allUsers={allUsers} onSelectClient={(client) => { setViewingClient(client); setActiveTab('dashboard'); }} onAddClient={async (u) => setAllUsers(await api.createUser({...u, id: Date.now().toString(), role:'athlete'}))} onDeleteClient={async (id) => setAllUsers(await api.deleteUser(id))} /></main></div>;
           }
 
           return (
-            /* ENDRET: Økt padding-bottom (pb-32) slik at innholdet ikke skjules bak den nye floating baren */
             <div className="max-w-md mx-auto min-h-screen bg-brand-pastel relative shadow-2xl overflow-hidden">
               <Header title={activeTab === 'dashboard' ? 'Dashbord' : activeTab === 'diet' ? 'Kosthold' : activeTab === 'workout' ? 'Trening' : 'Innsjekk'} user={currentUser} viewingClient={isCoach ? viewingClient : null} onLogout={handleLogout} onClearClient={() => { setViewingClient(null); setActiveTab('dashboard'); }} />
               <main className="p-4 pb-32 relative z-10">
-                {activeTab === 'dashboard' ? <DashboardView userData={currentData} isCoach={isCoach} onUpdateGoal={handleUpdateData} /> :
-                 activeTab === 'diet' ? <PlanSection type="diet" content={currentData.dietPlan} onSave={(val) => handleUpdateData('dietPlan', val)} isReadOnly={!isCoach} /> :
-                 activeTab === 'workout' ? <PlanSection type="workout" content={currentData.workoutPlan} onSave={(val) => handleUpdateData('workoutPlan', val)} isReadOnly={!isCoach} /> :
+                {activeTab === 'dashboard' ? <DashboardView userData={currentData} isCoach={isCoach} onUpdateGoal={(f, v) => { setCurrentData(d=>({...d, [f]: v})); api.saveUserData(viewingClient.id, {...currentData, [f]: v}); }} /> :
+                 activeTab === 'diet' ? <PlanSection type="diet" content={currentData.dietPlan} onSave={(val) => { setCurrentData(d=>({...d, dietPlan: val})); api.saveUserData(viewingClient.id, {...currentData, dietPlan: val}); }} isReadOnly={!isCoach} /> :
+                 activeTab === 'workout' ? <PlanSection type="workout" content={currentData.workoutPlan} onSave={(val) => { setCurrentData(d=>({...d, workoutPlan: val})); api.saveUserData(viewingClient.id, {...currentData, workoutPlan: val}); }} isReadOnly={!isCoach} /> :
                  <CheckInView checkins={currentData.checkins} onNewCheckin={handleNewCheckin} onDelete={handleDeleteCheckin} isReadOnly={isCoach} stepGoal={currentData.stepGoal} />}
               </main>
               <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
