@@ -465,6 +465,8 @@
                     setErrorMessage('Bildene tar for mye plass totalt! Prøv å fjerne noen bilder, eller ta nye bilder med litt lavere oppløsning.');
                 } else if (error.message.includes('column "images"')) {
                     setErrorMessage('SYSTEMFEIL: Mangler kolonne i databasen. Be Coach kjøre SQL-kommandoen!');
+                } else if (error.message.includes('foreign key constraint')) {
+                     setErrorMessage('SYSTEMFEIL: Brukeren finnes ikke i databasen lenger. Prøv å logge ut og inn igjen.');
                 } else {
                     setErrorMessage('Feil ved innsending: ' + error.message);
                 }
@@ -703,15 +705,34 @@
           useEffect(() => {
             const init = async () => {
                 try {
+                    // Hent alle brukere fra DB først
                     const users = await api.getUsers();
                     setAllUsers(users);
+
+                    // Sjekk om vi har en lagret sesjon
                     const savedSession = localStorage.getItem('jnm_session');
                     if (savedSession) {
                         const sessionUser = JSON.parse(savedSession);
-                        setCurrentUser(sessionUser);
-                        if (sessionUser.role === 'athlete') setViewingClient(sessionUser);
+                        
+                        // VIKTIG: Sjekk om brukeren fra sesjonen faktisk finnes i DB-listen
+                        const isValidUser = users.find(u => u.id === sessionUser.id);
+                        
+                        if (isValidUser) {
+                            // Brukeren finnes! Oppdater med ferske data fra DB
+                            setCurrentUser(isValidUser);
+                            if (isValidUser.role === 'athlete') setViewingClient(isValidUser);
+                        } else {
+                            // Brukeren finnes IKKE i DB (slettet?). Logg ut.
+                            console.warn("Session user not found in DB, logging out.");
+                            localStorage.removeItem('jnm_session');
+                            setCurrentUser(null);
+                        }
                     }
-                } catch(e) { console.error(e); } finally { setIsLoading(false); }
+                } catch(e) { 
+                    console.error("Feil under init:", e); 
+                } finally { 
+                    setIsLoading(false); 
+                }
             };
             init();
           }, []);
