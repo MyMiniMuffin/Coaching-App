@@ -110,7 +110,7 @@
         import { 
           Home, Utensils, Dumbbell, ClipboardCheck, Camera, Save, ChevronRight, ChevronLeft,
           TrendingUp, User, Briefcase, LogOut, Lock, ArrowRight, Plus, 
-          X, Trash2, Footprints, Edit2, Check, Moon, Zap, Scale, Maximize2, Loader2, AlertTriangle, Calendar
+          X, Trash2, Footprints, Edit2, Check, Moon, Zap, Scale, Maximize2, Loader2, AlertTriangle, Calendar, Activity
         } from 'lucide-react';
 
         // --- GLOBAL CONFIG ---
@@ -397,26 +397,36 @@
 
         // --- Views ---
 
-        const DashboardView = ({ userData, isCoach, onUpdateGoal }) => {
+        const DashboardView = ({ userData, isCoach, onUpdateData }) => {
           const lastCheckin = userData.checkins?.length > 0 ? userData.checkins[userData.checkins.length - 1] : null;
 
           const handleEditGoal = async () => {
               const input = prompt("Sett nytt skrittmål:", userData.stepGoal || 10000);
-              if (input && !isNaN(parseInt(input))) await onUpdateGoal('stepGoal', parseInt(input));
+              if (input && !isNaN(parseInt(input))) await onUpdateData('stepGoal', parseInt(input));
           };
 
-          // NY FUNKSJON: Coach endrer uke
+          // NY FUNKSJON: Coach endrer uke - FIX: Oppdaterer begge samtidig
           const handleEditWeeks = async () => {
               if (!isCoach) return;
               
-              const newCurrent = prompt("Hvilken uke er vi i?", userData.currentWeek || 1);
-              if (newCurrent === null) return;
+              const currentInput = prompt("Hvilken uke er vi i?", userData.currentWeek || 1);
+              if (currentInput === null) return;
+              const newCurrent = parseInt(currentInput);
 
-              const newTotal = prompt("Totalt antall uker i planen?", userData.totalWeeks || 12);
-              if (newTotal === null) return;
+              const totalInput = prompt("Totalt antall uker i planen?", userData.totalWeeks || 12);
+              if (totalInput === null) return;
+              const newTotal = parseInt(totalInput);
 
-              await onUpdateGoal('currentWeek', parseInt(newCurrent));
-              await onUpdateGoal('totalWeeks', parseInt(newTotal));
+              if (isNaN(newCurrent) || isNaN(newTotal)) {
+                  alert("Vennligst oppgi gyldige tall.");
+                  return;
+              }
+
+              // Sender et objekt med begge verdiene for å unngå race-conditions
+              await onUpdateData({
+                  currentWeek: newCurrent,
+                  totalWeeks: newTotal
+              });
           };
 
           return (
@@ -461,7 +471,7 @@
                     <h3 className="text-lg font-bold text-slate-800 mb-3 ml-1">Siste rapport</h3>
                     <Card className="!p-6">
                         <div className="flex justify-between items-center text-sm mb-3 pb-3 border-b border-slate-50">
-                            <span className="text-slate-500 font-medium">Plan Nøyaktighet</span>
+                            <span className="text-slate-500 font-medium">Nøyaktighet</span>
                             <span className="font-bold text-brand bg-brand-pastel px-2 py-1 rounded-lg">{lastCheckin.accuracy}/10</span>
                         </div>
                         <div className="flex justify-between items-center text-sm mb-3 pb-3 border-b border-slate-50">
@@ -743,10 +753,26 @@
                                 {isReadOnly && <button onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }} className="absolute top-4 right-4 text-slate-300 hover:text-red-500"><Trash2 size={16} /></button>}
                                 
                                 <div className="grid grid-cols-3 gap-2 mb-4 text-center text-xs">
-                                    <div className="bg-brand-pastel/50 p-2 rounded-xl"><b>Plan</b><br/>{entry.accuracy}/10</div>
-                                    <div className="bg-orange-50 p-2 rounded-xl"><b>Trening</b><br/>{entry.strengthSessions} + {entry.cardioSessions || 0}</div>
+                                    {/* NØYAKTIGHET */}
+                                    <div className="bg-blue-50 p-2 rounded-xl flex flex-col items-center justify-center">
+                                        <div className="text-[9px] uppercase text-blue-400 font-bold mb-1">Nøyaktighet</div>
+                                        <div className="flex items-center gap-1 font-bold text-slate-700 text-base">
+                                            <ClipboardCheck size={14} className="text-blue-500" /> 
+                                            {entry.accuracy}<span className="text-xs text-slate-400 font-normal">/10</span>
+                                        </div>
+                                    </div>
+
+                                    {/* TRENING (S/C) */}
+                                    <div className="bg-orange-50 p-2 rounded-xl flex flex-col items-center justify-center">
+                                        <div className="text-[9px] uppercase text-orange-400 font-bold mb-1">Trening</div>
+                                        <div className="flex items-center gap-2 font-bold text-slate-700 text-base">
+                                            <span className="flex items-center gap-1" title="Styrke"><Dumbbell size={14} className="text-orange-500" /> {entry.strengthSessions}</span>
+                                            <span className="text-slate-300 text-sm">|</span>
+                                            <span className="flex items-center gap-1" title="Cardio"><Activity size={14} className="text-red-400" /> {entry.cardioSessions || 0}</span>
+                                        </div>
+                                    </div>
                                     
-                                    {/* OPPDATERT: Energi / Søvn Visning - STØRRE OG TYDELIGERE */}
+                                    {/* ENERGI / SØVN */}
                                     <div className="bg-purple-50 p-2 rounded-xl flex flex-col items-center justify-center">
                                         <div className="text-[9px] uppercase text-purple-400 font-bold mb-1">Energi / Søvn</div>
                                         <div className="flex items-center gap-2 font-bold text-slate-700 text-base">
@@ -840,8 +866,8 @@
               dietPlan: '', 
               workoutPlan: '', 
               stepGoal: 10000, 
-              currentWeek: 1,  // NY
-              totalWeeks: 12,  // NY
+              currentWeek: 1, 
+              totalWeeks: 12,
               checkins: [] 
           });
           const [isLoading, setIsLoading] = useState(true);
@@ -913,9 +939,18 @@
                 setCurrentData(prev => ({ ...prev, checkins: [...prev.checkins, entry] }));
           };
           
-          const onUpdateGoal = async (field, value) => {
+          // FIX: Updated to handle multiple updates at once to prevent stale state issues
+          const handleUpdateData = async (keyOrObj, value) => {
               if (!viewingClient) return;
-              const newData = { ...currentData, [field]: value };
+              
+              let updates = {};
+              if (typeof keyOrObj === 'string') {
+                  updates = { [keyOrObj]: value };
+              } else if (typeof keyOrObj === 'object') {
+                  updates = keyOrObj;
+              }
+
+              const newData = { ...currentData, ...updates };
               setCurrentData(newData);
               await api.saveUserData(viewingClient.id, newData);
           };
@@ -941,9 +976,9 @@
             <div className="max-w-md mx-auto min-h-screen bg-brand-pastel relative shadow-2xl overflow-hidden">
               <Header title={activeTab === 'dashboard' ? 'Dashbord' : activeTab === 'diet' ? 'Kosthold' : activeTab === 'workout' ? 'Trening' : 'Innsjekk'} user={currentUser} viewingClient={isCoach ? viewingClient : null} onLogout={handleLogout} onClearClient={() => { setViewingClient(null); setActiveTab('dashboard'); }} />
               <main className="p-4 pb-32 relative z-10">
-                {activeTab === 'dashboard' ? <DashboardView userData={currentData} isCoach={isCoach} onUpdateGoal={onUpdateGoal} /> :
-                 activeTab === 'diet' ? <PlanSection type="diet" content={currentData.dietPlan} onSave={(val) => { setCurrentData(d=>({...d, dietPlan: val})); api.saveUserData(viewingClient.id, {...currentData, dietPlan: val}); }} isReadOnly={!isCoach} /> :
-                 activeTab === 'workout' ? <PlanSection type="workout" content={currentData.workoutPlan} onSave={(val) => { setCurrentData(d=>({...d, workoutPlan: val})); api.saveUserData(viewingClient.id, {...currentData, workoutPlan: val}); }} isReadOnly={!isCoach} /> :
+                {activeTab === 'dashboard' ? <DashboardView userData={currentData} isCoach={isCoach} onUpdateData={handleUpdateData} /> :
+                 activeTab === 'diet' ? <PlanSection type="diet" content={currentData.dietPlan} onSave={(val) => handleUpdateData('dietPlan', val)} isReadOnly={!isCoach} /> :
+                 activeTab === 'workout' ? <PlanSection type="workout" content={currentData.workoutPlan} onSave={(val) => handleUpdateData('workoutPlan', val)} isReadOnly={!isCoach} /> :
                  <CheckInView checkins={currentData.checkins} onNewCheckin={handleNewCheckin} onDelete={handleDeleteCheckin} isReadOnly={isCoach} stepGoal={currentData.stepGoal} />}
               </main>
               <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
