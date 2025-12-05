@@ -399,32 +399,56 @@
 
         // --- Views ---
 
-        // NY VIEW: Vektprogresjon med Swipe Back
+        // NY VIEW: Vektprogresjon med Forbedret Swipe
         const WeightProgressView = ({ checkins, onBack }) => {
             // SWIPE LOGIC START
             const [touchStart, setTouchStart] = useState(null);
-            const [touchEnd, setTouchEnd] = useState(null);
-
-            // Min. avstand for å registrere sveip (50px)
-            const minSwipeDistance = 50;
+            const [touchStartY, setTouchStartY] = useState(null);
 
             const onTouchStart = (e) => {
-                setTouchEnd(null); 
-                setTouchStart(e.targetTouches[0].clientX);
+                const x = e.touches[0].clientX;
+                const y = e.touches[0].clientY;
+                // Kun start hvis vi er ved venstre kant (iOS style edge-swipe)
+                // Dette hindrer at man sveiper ved uhell midt på skjermen
+                if (x < 50) {
+                    setTouchStart(x);
+                    setTouchStartY(y);
+                } else {
+                    setTouchStart(null);
+                    setTouchStartY(null);
+                }
             };
 
             const onTouchMove = (e) => {
-                setTouchEnd(e.targetTouches[0].clientX);
+                if (touchStart === null) return;
+                
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                const diffX = currentX - touchStart;
+                const diffY = currentY - touchStartY;
+
+                // Sjekk om bevegelsen er mest vertikal (scrolling)
+                // Hvis man drar mer ned/opp enn til siden, avbryt tilbake-gesten
+                if (Math.abs(diffY) > Math.abs(diffX)) {
+                    setTouchStart(null);
+                    setTouchStartY(null);
+                    return;
+                }
             };
 
-            const onTouchEnd = () => {
-                if (!touchStart || !touchEnd) return;
-                const distance = touchStart - touchEnd;
-                const isRightSwipe = distance < -minSwipeDistance; // Venstre til høyre (negativ verdi)
+            const onTouchEnd = (e) => {
+                if (touchStart === null) return;
+                
+                const endX = e.changedTouches[0].clientX;
+                const diffX = endX - touchStart;
 
-                if (isRightSwipe) {
+                // Hvis man har dratt langt nok til høyre (minst 75px)
+                if (diffX > 75) {
                     onBack();
                 }
+                
+                setTouchStart(null);
+                setTouchStartY(null);
             };
             // SWIPE LOGIC END
 
