@@ -9,24 +9,28 @@ exports.handler = async (event) => {
       const userId = event.queryStringParameters.id;
       if (!userId) return { statusCode: 400, body: 'Missing user ID' };
 
-      const userResult = await sql`
-        SELECT diet_plan, workout_plan, step_goal, total_weeks, start_date, is_paused, paused_at 
-        FROM users 
-        WHERE id = ${userId}
-      `;
-      const user = userResult[0] || {};
+      // OPTIMALISERING: Kjører spørringene parallelt med Promise.all
+      // Dette sparer tid fordi vi slipper å vente på at den første blir ferdig før vi starter den andre.
+      const [userResult, checkins] = await Promise.all([
+        sql`
+          SELECT diet_plan, workout_plan, step_goal, total_weeks, start_date, is_paused, paused_at 
+          FROM users 
+          WHERE id = ${userId}
+        `,
+        sql`
+          SELECT 
+            id, date, weight, sleep, energy, accuracy, 
+            strength_sessions as "strengthSessions", 
+            cardio_sessions as "cardioSessions", 
+            steps_reached as "stepsReached", 
+            taken_supplements as "takenSupplements", 
+            comment, image_url, images, created_at as timestamp 
+          FROM checkins 
+          WHERE user_id = ${userId}
+        `
+      ]);
 
-      const checkins = await sql`
-        SELECT 
-          id, date, weight, sleep, energy, accuracy, 
-          strength_sessions as "strengthSessions", 
-          cardio_sessions as "cardioSessions", 
-          steps_reached as "stepsReached", 
-          taken_supplements as "takenSupplements", 
-          comment, image_url, images, created_at as timestamp 
-        FROM checkins 
-        WHERE user_id = ${userId}
-      `;
+      const user = userResult[0] || {};
       
       const formattedCheckins = checkins.map(c => {
         let imageList = [];
